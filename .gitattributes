@@ -1,4 +1,4 @@
-*.4 linguist-language=Forth
 *.f linguist-language=Forth
 *.4th linguist-language=Forth
 *.fth linguist-language=Forth
+*.4 linguist-language=Forth
