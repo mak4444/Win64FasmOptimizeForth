@@ -1,0 +1,298 @@
+;/
+;/: FORTH-WORDLIST AHEAD THEN ;
+
+_FORTHsubWORDLIST:
+;/*	jmp	_FORTHsubWORDLIST+0x5 	; 80C040E8 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C040ED C3 
+;/: VOC-LIST AHEAD THEN ;
+
+
+_VOCsubLIST:
+;/*	jmp	_VOCsubLIST+0x5 	; 80C040EE 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C040F3 C3 
+;/
+;/: CONTEXT_SIZE AHEAD THEN ;
+
+
+_CONTEXT_SIZE:
+;/*	jmp	_CONTEXT_SIZE+0x5 	; 80C040F4 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C040F9 C3 
+;/: CONTEXT AHEAD THEN ;
+
+
+_CONTEXT:
+;/*	jmp	_CONTEXT+0x5 	; 80C040FA 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C040FF C3 
+;/: CURRENT AHEAD THEN ;
+
+
+_CURRENT:
+;/*	jmp	_CURRENT+0x5 	; 80C04100 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04105 C3 
+;/: ORIGVIEWLINK AHEAD THEN ;
+
+
+_ORIGVIEWLINK:
+;/*	jmp	_ORIGVIEWLINK+0x5 	; 80C04106 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C0410B C3 
+;/
+;/: UZTYPE AHEAD THEN ;
+
+
+_UZTYPE:
+;/*	jmp	_UZTYPE+0x5 	; 80C0410C 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04111 C3 
+;/: EMIT_M AHEAD THEN ;
+
+
+_EMIT_M:
+;/*	jmp	_EMIT_M+0x5 	; 80C04112 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04117 C3 
+;/: OS_KEY AHEAD THEN ;
+
+
+_OS_KEY:
+;/*	jmp	_OS_KEY+0x5 	; 80C04118 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C0411D C3 
+;/: WRITE-FILE  AHEAD THEN ;
+
+
+_WRITEsubFILE:
+;/*	jmp	_WRITEsubFILE+0x5 	; 80C0411E 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04123 C3 
+;/: READ-FILE  AHEAD THEN ;
+
+
+_READsubFILE:
+;/*	jmp	_READsubFILE+0x5 	; 80C04124 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04129 C3 
+;/
+;/: FILE-POSITION  AHEAD THEN ;
+
+
+_FILEsubPOSITION:
+;/*	jmp	_FILEsubPOSITION+0x5 	; 80C0412A 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C0412F C3 
+;/: REPOSITION-FILE  AHEAD THEN ;
+
+
+_REPOSITIONsubFILE:
+;/*	jmp	_REPOSITIONsubFILE+0x5 	; 80C04130 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04135 C3 
+;/
+;/: COMMAND_LINE AHEAD THEN ;
+
+
+_COMMAND_LINE:
+;/*	jmp	_COMMAND_LINE+0x5 	; 80C04136 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C0413B C3 
+;/
+;/: ZOPEN-FILE AHEAD THEN ;
+
+
+_ZOPENsubFILE:
+;/*	jmp	_ZOPENsubFILE+0x5 	; 80C0413C 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04141 C3 
+;/: ZOPEN-FILE-SHARED AHEAD THEN ;
+
+
+_ZOPENsubFILEsubSHARED:
+;/*	jmp	_ZOPENsubFILEsubSHARED+0x5 	; 80C04142 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04147 C3 
+;/: ZCREATE-FILE AHEAD THEN ;
+
+
+_ZCREATEsubFILE:
+;/*	jmp	_ZCREATEsubFILE+0x5 	; 80C04148 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C0414D C3 
+;/: ZCREATE-FILE-SHARED AHEAD THEN ;
+
+
+_ZCREATEsubFILEsubSHARED:
+;/*	jmp	_ZCREATEsubFILEsubSHARED+0x5 	; 80C0414E 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04153 C3 
+;/: CLOSE-FILE AHEAD THEN ;
+
+
+_CLOSEsubFILE:
+;/*	jmp	_CLOSEsubFILE+0x5 	; 80C04154 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04159 C3 
+;/
+;/: CMOVE> AHEAD THEN ;
+
+
+_CMOVEgreat:
+;/*	jmp	_CMOVEgreat+0x5 	; 80C0415A 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C0415F C3 
+;/
+;/: HALT  AHEAD THEN ;
+
+
+_HALT:
+;/*	jmp	_HALT+0x5 	; 80C04160 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04165 C3 
+;/
+;/\ - DPBuff : DPBuff AHEAD THEN ;
+;/
+;/
+;/
+;/:  DLL_S  AHEAD THEN ;
+
+
+_DLL_S:
+;/*	jmp	_DLL_S+0x5 	; 80C04166 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C0416B C3 
+;/
+;/\ parameters in reverse order
+;/
+;/: XAPI_0  AHEAD THEN ;
+
+
+_XAPI_0:
+;/*	jmp	_XAPI_0+0x5 	; 80C0416C 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04171 C3 
+;/: XAPI_1  AHEAD THEN ;
+
+
+_XAPI_1:
+;/*	jmp	_XAPI_1+0x5 	; 80C04172 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04177 C3 
+;/: XAPI_2  AHEAD THEN ;
+
+
+_XAPI_2:
+;/*	jmp	_XAPI_2+0x5 	; 80C04178 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C0417D C3 
+;/: XAPI_3  AHEAD THEN ;
+
+
+_XAPI_3:
+;/*	jmp	_XAPI_3+0x5 	; 80C0417E 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04183 C3 
+;/: XAPI_4  AHEAD THEN ;
+
+
+_XAPI_4:
+;/*	jmp	_XAPI_4+0x5 	; 80C04184 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04189 C3 
+;/: XAPI_5  AHEAD THEN ;
+
+
+_XAPI_5:
+;/*	jmp	_XAPI_5+0x5 	; 80C0418A 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C0418F C3 
+;/: XAPI_9  AHEAD THEN ;
+
+
+_XAPI_9:
+;/*	jmp	_XAPI_9+0x5 	; 80C04190 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C04195 C3 
+;/
+;/
+;/: NXCALL0  AHEAD THEN ;
+
+
+_NXCALL0:
+;/*	jmp	_NXCALL0+0x5 	; 80C04196 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C0419B C3 
+;/: NXCALL1  AHEAD THEN ;
+
+
+_NXCALL1:
+;/*	jmp	_NXCALL1+0x5 	; 80C0419C 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C041A1 C3 
+;/: NXCALL2  AHEAD THEN ;
+
+
+_NXCALL2:
+;/*	jmp	_NXCALL2+0x5 	; 80C041A2 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C041A7 C3 
+;/: NXCALL3  AHEAD THEN ;
+
+
+_NXCALL3:
+;/*	jmp	_NXCALL3+0x5 	; 80C041A8 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C041AD C3 
+;/: NXCALL4  AHEAD THEN ;
+
+
+_NXCALL4:
+;/*	jmp	_NXCALL4+0x5 	; 80C041AE 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C041B3 C3 
+;/: NXCALL  AHEAD THEN ;
+
+
+_NXCALL:
+;/*	jmp	_NXCALL+0x5 	; 80C041B4 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C041B9 C3 
+;/
+;/: DLL_L AHEAD THEN ;
+
+
+_DLL_L:
+;/*	jmp	_DLL_L+0x5 	; 80C041BA 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C041BF C3 
+;/: CALLBACKIN	AHEAD THEN ;
+
+
+_CALLBACKIN:
+;/*	jmp	_CALLBACKIN+0x5 	; 80C041C0 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C041C5 C3 
+;/: PARAM		AHEAD THEN ;
+
+
+_PARAM:
+;/*	jmp	_PARAM+0x5 	; 80C041C6 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C041CB C3 
+;/: TSTART	AHEAD THEN ;
+
+
+_TSTART:
+;/*	jmp	_TSTART+0x5 	; 80C041CC 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C041D1 C3 
+;/: ALLOCATE	AHEAD THEN ;
+
+
+_ALLOCATE:
+;/*	jmp	_ALLOCATE+0x5 	; 80C041D2 
+	DB 0xE9,0x0,0x0,0x0,0x0
+	ret		; 80C041D7 C3 

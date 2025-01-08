@@ -1,0 +1,655 @@
+include 'win64a.inc'
+include 'macro/if.inc'
+
+;include 'equates\gdi32.inc'
+CLEARTYPE_QUALITY = 5
+IDM_NEW   = 101
+IDM_EXIT  = 102
+IDM_ABOUT = 901
+
+;R13 tast
+;R14 R15 loop
+
+format PE64 console
+;stack 1000000h                ; stack size
+;stack 90000h,60000h                ; stack size
+
+
+; executable at 10000h
+
+
+entry main
+	
+macro Wortbirne Name,CName,FLine,Flags {
+	align 8
+	DQ	CName
+	DD	Flags,FLine
+	DQ	DEFLAST
+DEFLAST = $
+	DB	@F-$-1
+	DB      Name
+@@:
+}
+
+macro CONSTANT_W Name,Value,FLine,Flags {
+	align 8
+	DQ	@F
+	DD	Flags,FLine
+	DQ	DEFLAST
+DEFLAST = $
+	DB	@F-$-1
+	DB      Name
+@@:	call	_DOCONSTANT
+	dq	Value
+}
+
+macro VARIABLE_W Name,Value,FLine,Flags {
+	align 8
+	DQ	@F
+	DD	Flags,FLine
+	DQ	DEFLAST
+DEFLAST = $
+	DB	@F-$-1
+	DB      Name
+@@:	call	_DOCREATE
+	dq	Value
+}
+
+macro VIEW_S Flags {
+	dq	SVIEWLINK,0
+	SVIEWLINK=$-16
+}
+
+macro S_VIEW_PATH Path {
+	dq	SVIEWLINK,-1
+	SVIEWLINK=$-16
+	db @F-(SVIEWLINK+16)-1
+	db Path
+@@:
+}
+
+
+
+main:
+
+	invoke	GetStdHandle,STD_OUTPUT_HANDLE
+
+	mov	[_HsubSTDOUT+5],rax
+
+	invoke	GetStdHandle,STD_ERROR_HANDLE
+
+	mov	[_HsubSTDERR+5],rax
+
+	invoke	GetStdHandle,STD_INPUT_HANDLE
+
+	mov	[_HsubSTDIN+5],rax
+
+	mov	rbp,SPP
+	mov	rax,CTOP ; to DP
+	call	_FMAIN
+
+	ret
+
+
+_UZTYPE:
+	jmp _DROP
+
+_DROP =  _DgreatS
+_RSHIFT =  _greatgreat
+_LSHIFT =  _lessless
+_1add  =  _CHARadd
+_INVERT =  _NOT
+_0save =  _OFF
+_INVERT =  _NOT
+_PERFORM =  _loadEXECUTE
+
+
+DEFLAST=0
+SVIEWLINK=0
+
+fimg:
+include 'Forth64S/src/src_PRIMITIVES.INC'
+include 'Forth64S/src/src_VARS.INC'
+include 'Forth64S/src/src_HPROC.INC'
+include 'Forth64S/src/macroopt.INC'
+include 'Forth64S/src/NUMB_PARSE_IO.INC'
+include 'Forth64S/src/LITERAL.INC'
+include 'Forth64S/src/src_FIND_INTERP.INC'
+include 'Forth64S/src/_mak/CompIF1.INC'
+include 'Forth64S/src/TERM/INCLUDE.INC'
+include 'Forth64S/src/fstart.INC'
+
+	DQ	@f
+	DQ	0	; flags
+	DQ	0	; Link einfügen  Insert Link
+	DEFLAST=$
+	DB 6     ; Länge des Namensfeldes berechnen  Calculate length of name field
+	DB "IMGLIT"    ; Namen anfügen  Insert name string
+@@:	call	_DOCONSTANT
+	DQ	fimg
+
+include 'Forth64S/src/GHEADERS.INC'
+
+_ORIGVIEWLINK:
+	call	_DOCONSTANT
+	DQ	SVIEWLINK
+
+_FORTH_ORIG:
+	call	_DOCONSTANT
+	DQ	DEFLAST
+
+_FORTHsubWORDLIST:
+	call	_DOCREATE
+	DQ	DEFLAST
+	DQ	0	; link
+	DQ	@f
+@@:	db	5
+	db	"FORTH"   
+_VOCsubLIST:
+	call	_DOCREATE
+	DQ	_FORTHsubWORDLIST + 5 + 8
+
+_CONTEXT_SIZE: 
+	call	_DOCONSTANT
+	DQ	 @f - ( _CONTEXT + 5 )
+
+_CONTEXT:
+	call _DOCREATE
+	DQ _FORTHsubWORDLIST + 5 
+	DQ 15 DUP (0)
+@@:	DQ	0
+
+_CURRENT:
+; This variable holds the address of the word list to which new definitions are added.
+	call _DOCREATE
+	DQ _FORTHsubWORDLIST + 5 
+
+
+_CMOVEgreat:
+ MOV     RCX, [RBP+8]
+ MOV     RDX, [RBP]
+ MOV     R8, RAX
+ LEA     RCX, [RCX+RAX-8]
+ LEA     RDX, [RDX+RAX-8]
+ SHR     RAX, 03
+ JZ    @F
+ CMOVE7F3:
+ MOV     RBX, [RCX]
+ SUB     RAX, 1
+ LEA     RCX, [RCX-8]
+ MOV     [RDX], RBX
+ LEA     RDX, [RDX-8]
+ JNZ  CMOVE7F3
+ @@:
+ MOV     RAX, R8
+ AND     RAX, 7
+ LEA     RCX, [RCX+7]
+ LEA     RDX, [RDX+7]
+ JZ    @F ; 0042682A
+ CMOVE818:
+ MOV     BL, [RCX]
+ SUB     RAX, 1
+ LEA     RCX, [RCX-1]
+ MOV     [RDX], BL
+ LEA     RDX, [RDX-1]
+ JNZ  CMOVE818
+ @@: 
+ MOV     RAX, [RBP+10H]
+ LEA     RBP, [RBP+18H]
+ RET
+
+_SKIP: ; caddr u char -- caddr2 u2
+
+  MOV     RDX, RAX       ; EDX=char 
+  MOV     RCX, [RBP]     ; ECX=u=len
+  MOV     RAX, [RBP+08]  ; EBX=caddr
+SKIP67B:
+  jecxz	SKIP691          ; exit if len=0       
+  MOV     AL, [RAX]      ; get character       
+  CMP     AL, 09         ; convert tab to space
+  JNZ	@F
+  MOV     AL, 20
+@@:
+  CMP     AL, DL	; get out if char to scan for
+  JNZ	SKIP691
+  DEC     RCX           ; step count and address
+  INC     RAX
+  JMP     SKIP67B
+SKIP691:
+  MOV     [RBP+08], RAX  ; c-addr
+  MOV     RAX, RCX       ; 'u=len'
+  LEA     RBP, [RBP+08]  ; restore stack
+  RET
+
+_EMIT_M:
+	mov	[character],al
+	invoke	WriteFile,qword [_HsubSTDOUT+5],character,1,bytes_count,0
+
+	MOV	RAX,[RBP]
+	LEA	RBP,[RBP+8]
+	RET
+
+_OS_KEY:
+	LEA	RBP,[RBP-8]
+	MOV	[RBP],RAX	
+@@:
+	mov rax, -1
+	mov [emit_buffer], rax
+	push rsi
+	invoke ReadConsoleInput, qword [_HsubSTDIN+5], emit_buffer, 1, written_buffer, 0
+	pop rsi
+	cmp qword [emit_buffer],1
+	je @B
+
+	movzx rax, byte [written_buffer+6]
+	test rax, rax
+	jz @B
+	ret
+
+_WRITEsubFILE: ;  ( c-addr u fileid -- ior ) 
+	invoke	WriteFile,rax,qword [rbp+8],qword [rbp],bytes_count,0
+	lea	rbp,[rbp+16]
+     	sub    rax,1
+     	sbb    rax,rax ; 0=
+	ret
+
+_READsubFILE: ;  ( c-addr u1 fileid -- u2 ior )
+	MOV	qword [bytes_count],rbx
+	invoke	ReadFile,rax,qword [rbp+8],qword [rbp],bytes_count,0
+
+	lea	rbp,[rbp+8]
+	mov	ebx, dword [bytes_count]
+	AND	rbx,07fffffffh
+;	sub	rbx,2
+	mov	[rbp],rbx
+     	sub	rax,1
+     	sbb	rax,rax ; 0=
+	ret
+
+_FILEsubPOSITION: ;( fileid -- ud ior )
+     	lea	rbp,[rbp-0x10]
+	mov	qword [rbp+8],0
+	mov	qword [rbp],0
+	invoke	SetFilePointer,rax,0,qword [rbp],FILE_CURRENT
+	mov	qword [rbp+8],rax
+     	add	rax,1
+     	sub	rax,1
+     	sbb	rax,rax
+	ret
+
+_REPOSITIONsubFILE: ; ( ud fileid -- ior )   NIP REPOS-FILE ;
+	invoke	SetFilePointer,rax,qword [rbp+8],qword [rbp],FILE_BEGIN
+     	lea	rbp,[rbp+0x10]
+     	add	rax,1
+     	sub	rax,1
+     	sbb	rax,rax
+	ret
+
+_COMMAND_LINE: ;( -- zaddr )
+      	LEA RBP, [RBP-8]          ;	lea    -0x8(%rbp),%rbp
+      	MOV [RBP], RAX          ;	mov    %rax,0x0(%rbp)
+	invoke	GetCommandLine
+	ret
+
+
+_ZOPENsubFILE: ; ( z-addr fam -- fileid ior )
+	invoke	CreateFile,qword [rbp],rax,0,0,OPEN_EXISTING,FILE_ATTRIBUTE_ARCHIVE,0
+	AND	rax,07fffffffh
+	mov	[rbp],rax
+
+     	xor    rax,07fffffffh
+     	sub    rax,1		
+	sbb    rax,rax
+	ret
+
+
+_ZOPENsubFILEsubSHARED: ; ( z-addr fam -- fileid ior )
+	invoke	CreateFile,qword [rbp],rax,3,0,OPEN_EXISTING,FILE_ATTRIBUTE_ARCHIVE,0
+	AND	rax,07fffffffh
+	mov	[rbp],rax
+
+     	xor    rax,07fffffffh
+     	sub    rax,1		
+	sbb    rax,rax
+	ret
+
+_ZCREATEsubFILE: ;( z-addr fam -- fileid ior )
+	invoke	CreateFile,qword [rbp],rax,0,0,CREATE_ALWAYS,FILE_ATTRIBUTE_ARCHIVE,0
+	AND	rax,07fffffffh
+	mov	[rbp],rax
+
+     	xor    rax,07fffffffh
+     	sub    rax,1		
+	sbb    rax,rax
+	ret
+
+_ZCREATEsubFILEsubSHARED: ;( z-addr fam -- fileid ior )
+	invoke	CreateFile,qword [rbp],rax,3,0,CREATE_ALWAYS,FILE_ATTRIBUTE_ARCHIVE,0
+	AND	rax,07fffffffh
+	mov	[rbp],rax
+
+     	xor    rax,07fffffffh
+     	sub    rax,1		
+	sbb    rax,rax
+	ret
+
+_CLOSEsubFILE: ;( fileid -- ior )
+	invoke	CloseHandle,rax
+     	mov    rax,0
+	ret
+
+xcfa_API_12:
+	push	qword [rbp+8*11]
+xcfa_API_11:
+	push	qword [rbp+8*10]
+xcfa_API_10:
+	push	qword [rbp+8*9]
+xcfa_API_9:
+	push	qword [rbp+8*8]
+xcfa_API_8:
+	push	qword [rbp+8*7]
+xcfa_API_7:
+	push	qword [rbp+8*6]
+xcfa_API_6:
+	push	qword [rbp+8*5]
+xcfa_API_5:
+	push	qword [rbp+8*4]
+xcfa_API_4:
+	mov	r9,[rbp+8*3]
+xcfa_API_3:
+	mov	r8,[rbp+8*2]
+xcfa_API_2:
+	mov	rdx,[rbp+8]
+xcfa_API_1:
+	mov	rcx,[rbp]
+xcfa_API_0:
+	sub	rsp,$20
+	jmp	rbx
+
+
+_XAPI_12:
+	lea	rbx,[@f]
+	jmp	xcfa_API_12
+@@:	CALL	rax
+	add	rsp,$60 
+	retn
+
+_XAPI_9:
+	lea	rbx,[@f]
+	jmp	xcfa_API_9
+@@:	CALL	rax
+	add	rsp,$48
+	retn
+
+_XAPI_6:
+	lea	rbx,[@f]
+	jmp	xcfa_API_6
+@@:	CALL	rax
+	add	rsp,$30 
+	retn
+
+_XAPI_5:
+	lea	rbx,[@f]
+	jmp	xcfa_API_5
+@@:	CALL	rax
+	add	rsp,$28 
+	retn
+
+_XAPI_4:
+	lea	rbx,[@f]
+	jmp	xcfa_API_4
+@@:	CALL	rax
+	add	rsp,$20 
+	retn
+
+_XAPI_3:
+	lea	rbx,[@f]
+	jmp	xcfa_API_4
+@@:	CALL	rax
+	add	rsp,$20 
+	retn
+
+_XAPI_2:
+	lea	rbx,[@f]
+	jmp	xcfa_API_2
+@@:	CALL	rax
+	add	rsp,$20 
+	retn
+
+_XAPI_1:
+	sub	rsp,$20
+	mov	rcx,[rbp]
+	CALL	rax
+	add	rsp,$20 
+	retn
+
+_XAPI_0:
+	sub	rsp,$20
+	CALL	rax
+	add	rsp,$20 
+	retn
+
+_DLL_L:
+	mov	rbx, rsp
+	and     rbx, 0fh
+	jz	@f
+	lea	rsp,[rsp-8]
+	invoke	LoadLibrary,RAX
+	lea	rsp,[rsp+8]
+	retn
+@@:	invoke	LoadLibrary,RAX
+	retn
+
+_DLL_S:
+	MOV     R12, RSP
+	SUB     RSP, 20h
+	AND     RSP, -10h
+	invoke	GetProcAddress,qword [rbp],rax
+	MOV     RSP, R12
+	lea	rbp,[rbp+8]
+	retn
+
+_NXCALL0:
+	MOV     R12, RSP
+	SUB     RSP, 20h
+	AND     RSP, -10h
+	CALL    RAX
+	MOV     RSP, R12
+	RET
+
+_NXCALL1:
+	MOV     R12, RSP
+	SUB     RSP, 20h
+	AND     RSP, -10h
+	MOV     RCX, [RBP]
+	CALL    RAX
+	LEA     RBP, [RBP+08]
+	MOV     RSP, R12
+	RET
+
+_NXCALL2:
+	MOV     R12, RSP
+	SUB     RSP, 20h
+	AND     RSP, -10h
+	MOV     RCX, [RBP+08]
+	MOV     RDX, [RBP]
+	CALL    RAX
+	LEA     RBP, [RBP+10H]
+	MOV     RSP, R12
+	RET
+
+_NXCALL3:
+	MOV     R12, RSP
+	SUB     RSP, 20h
+	AND     RSP, -10h
+	MOV     RCX, [RBP+10H]
+	MOV     RDX, [RBP+08]
+	MOV     R8, [RBP]
+	CALL    RAX
+	LEA     RBP, [RBP+18H]
+	MOV     RSP, R12
+	RET
+
+_NXCALL4:
+	MOV     R12, RSP
+	SUB     RSP, 20h
+	AND     RSP, -10h
+	MOV     RCX, [RBP+18h]
+	MOV     RDX, [RBP+10h]
+	MOV     R8, [RBP+08]
+	MOV     R9, [RBP]
+	CALL    RAX
+	LEA     RBP, [RBP+20h]
+	MOV     RSP, R12
+	RET
+
+NXCALLS: dq   _NXCALL0,_NXCALL1,_NXCALL2,_NXCALL3,_NXCALL4
+	
+NXCALLS4:
+	MOV     RBX, RAX
+	MOV     RAX, [RBP]
+	LEA     RBP, [RBP+08]
+	JMP     qword [RBX*8+NXCALLS]
+
+_NXCALL:
+
+	CMP     RAX, 04
+	JLE  NXCALLS4
+	PUSH    R13
+
+	MOV     R12, RSP
+	LEA    RBX, [RAX*8]
+	MOV     R11, [RBP]
+	SUB     RSP, RBX
+	AND     RSP, -10h
+	MOV     R10, RBX
+	MOV     RCX, [R10+RBP]
+	SUB     R10, 08
+	MOV     RDX, [R10+RBP]
+	SUB     R10, 08
+	MOV     R8, [R10+RBP]
+	SUB     R10, 08
+	MOV     R9, [R10+RBP]
+	SUB     R10, 08
+	MOV     R13, 00000020h
+@@:	MOV     RAX, [R10+RBP] ; 
+	MOV     [RSP+R13], RAX
+	ADD     R13, 08
+	SUB     R10, 08
+	JNZ  @b
+	CALL    R11
+	LEA     RBP, [RBX+RBP+08]
+	MOV     RSP, R12
+	POP     R13
+	retn
+
+_BEEP44:
+	push	rax
+	invoke	Beep,79666,644
+	pop	rax
+	retn
+
+_TASKININT:
+	mov	rax , R13
+	lea	rbp,[rsp-18000h]
+	lea	R13,[rsp-10000h]
+	retn
+
+_CALLBACKIN:
+	mov	rax , R13
+	lea	rbp,[rsp+2800h]
+	lea	R13,[rsp+200h]
+	retn
+
+_PARAM:
+      	LEA	RBP, [RBP-32]
+      	MOV	[RBP+24], rax
+	mov     [RBP+16], rcx
+	mov     [RBP+8], rdx
+	mov     [RBP],  r8
+	mov     rax, r9 
+     ret
+
+
+_TSTART:
+	invoke	CreateThread,NULL,20000h,rax,0,0,0
+	retn
+
+
+_MARAP:
+	mov     r9 , rax
+	mov     r8 , [RBP]
+	mov     rdx , [RBP+8]
+	mov     rcx , [RBP+16]
+      	MOV	rax , [RBP+24]
+      	LEA	RBP, [RBP+32]
+     ret
+
+_ALLOCATE:
+	invoke	VirtualAlloc,0,rax,MEM_COMMIT,PAGE_EXECUTE_READWRITE
+      	LEA RBP, [RBP-8]	;	lea    -0x8(%rbp),%rbp
+      	MOV [RBP], RAX		;	mov    %rax,0x0(%rbp)
+     	sub    rax,1
+     	sbb    rax,rax
+
+	ret
+
+_FREE:
+	invoke	VirtualFree,rax,0,MEM_RELEASE
+        mov     eax, 0
+	ret
+
+
+_SLEEP:
+	MOV     R12, RSP
+	SUB     RSP, 20h
+	AND     RSP, -10h
+	invoke Sleep,rax
+	MOV     RSP, R12
+     	MOV RAX, [RBP]
+      	LEA RBP, [RBP+8]
+	ret
+
+_HALT:
+	and	rsp,not 0fh 
+	invoke	ExitProcess,RAX
+@@:	JMP @B	
+
+_LOCALS_EXIT:
+	POP RBX
+	ADD RSP, RBX
+	ret
+
+
+welcome_message db		'64 Firth',13,10,0
+
+ByeLevel DQ 0
+lastcur dd 0,0
+emit_buffer rq 1
+written_buffer rq 1
+
+file_handle		rq	1
+file_size		rq	1
+buff_addr		rq	1
+
+align 8
+TIBB	DB 512 DUP (?)
+CTOP	DB 0x100000 DUP (?)
+SPP	DQ 10 DUP (?)
+bytes_count dd ?
+character db ?
+
+section '.idata' import data readable writeable
+
+  library kernel32,'KERNEL32.DLL',\
+	user32,'USER32.DLL',\
+          Comdlg32,'COMDLG32.DLL',\
+	  gdi32,'GDI32.DLL'
+
+import Comdlg32,\
+         GetOpenFileNameA,'GetOpenFileNameA',\
+         GetSaveFileNameA,'GetSaveFileNameA'
+
+  include 'api/kernel32.inc'
+  include 'api/user32.inc'
+  include 'api/gdi32.inc'
