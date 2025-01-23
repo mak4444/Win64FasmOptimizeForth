@@ -48,6 +48,8 @@ DECIMAL
 
 MODULE: GASM64_MOD
 
+: {  '}' PARSE 2DROP ;
+
 0 VALUE MOREPASS
 0 VALUE NPASS
 
@@ -72,6 +74,8 @@ MODULE: GASM64_MOD
 
 : FLTABLE      ( --- addr )               \ 
   TCREATE  , TDOES>  \  F7_ED
+    NPASS 0= IF DROP here 4 + -1 TO MOREPASS	BREAK
+
   @ -1  SWAP  MAXLL CELLS BOUNDS
 
   DO  HERE I @ U<
@@ -79,14 +83,7 @@ MODULE: GASM64_MOD
 	THEN
   CELL
  +LOOP
- DUP -1 =
- IF
-   NPASS
-	if 1  ABORT" forward ref error or MAXLL not enough" 
-	else drop here 4 +
-	then
-	-1 TO MOREPASS
- THEN
+ DUP -1 =  ABORT" forward ref error or MAXLL not enough"
 ;
 
 : :::L  :LTABLE DUP BLTABLE  FLTABLE  ;
@@ -147,9 +144,11 @@ CREATE <<BUF
  <<BUF + C@
  DUP 0< IF -333 THROW THEN
 \ CR ." ))33 " .S KEY DROP
- TO >>))  |)) ; 
-
-: %rip _%rip  DEPTH TO R_DEPTH ;
+ TO >>))  |))
+\ abort
+ ;
+ 
+: %rip _%rip #(( IF DEPTH TO R_DEPTH THEN ;
 
 : %_l: CREATE DUP   , 1+ DOES> @ %r_x REX.RBX 2*	TO REX.RBX 0 TO REG>8 ;
 : %_x: CREATE DUP   , 1+ DOES> @ %r_x REX.RBX 2*	TO REX.RBX 1 TO OSIZE ;
@@ -159,8 +158,7 @@ CREATE <<BUF
 : %r8d: %_l: DOES> @ %r_x REX.RBX 2* 1+ TO REX.RBX 1 TO REG>8 ;
 
 : %r_x: %_l: DOES> @ %r_x REX.RBX 2*    TO REX.RBX  #(( IF DEPTH TO R_DEPTH BREAK $8 TO REX_W 1 TO REG>8 ;
-: %r_n: %_l: DOES> @ %r_x REX.RBX 2* 1+
- TO REX.RBX  #(( IF DEPTH TO R_DEPTH BREAK $8 TO REX_W 1 TO REG>8 ;
+: %r_n: %_l: DOES> @ %r_x REX.RBX 2* 1+ TO REX.RBX  #(( IF DEPTH TO R_DEPTH BREAK $8 TO REX_W 1 TO REG>8 ;
 
 0
 %_l: %al %_l: %cl %_l: %dl %_l: %bl %_l: %ah %_l: %ch %_l: %dh %_l: %bh
@@ -203,6 +201,7 @@ DROP
 
  $$ 0 (( %r_x |))		PARAM: #$,(%r_x)
  $$ 0 (( %r_x %r_x |))		PARAM: #$,(%r_x,%r_x)
+ $$ 0 (( %rip |))		PARAM: #$,(%rip)
 
  %r_x 0 (( %r_x |)) 	PARAM: #%r_x,(%r_x)
  %r_x 0 (( %r_x %r_x |)) PARAM: #%r_x,(%r_x,%r_x)	
@@ -211,8 +210,8 @@ DROP
   %r_x 0 (( %rip |))	PARAM: #%r_x,(%rip)
 
 
-CREATE TAB_(r,r)	0 C, 2 C, 1 C, 3 C,
-CREATE TAB_(r)r		0 C, 4 C, 2 C, 3 C, 4 C, 5 C, 6 C, 7 C,
+CREATE TAB_(r,r)	0 C, 1 C, 4 C, 3 C,
+CREATE TAB_(r)r		0 C, 4 C, 2 C, 3 C,
 CREATE TAB_r(r)		0 C, 1 C, 2 C, 3 C, 4 C, 5 C, 6 C, 7 C,
 
 CREATE TAB_(r,r)r	0 C, 4 C, 2 C, 6 C, 1 C, 5 C, 3 C, 7 C,
@@ -225,12 +224,12 @@ CREATE TAB_r(r,r)	0 C, 2 C, 1 C, 3 C, 4 C, 6 C, 5 C, 7 C,
 	IF    -333 THROW THEN
 \ MO_TST_VAL-Off
 \ CR ." REX20=" .S KEY DROP
- #(%r_x,%r_x)		IF TAB_(r,r)	+ C@ THEN
- #(%r_x),%r_x 
-\ CR ." REX40=" .S KEY DROP
-  	IF TAB_(r)r	+ C@ THEN
+  #%r_x,%r_x
+ #%r_x,(%r_x)   OR
+ #(%r_x,%r_x)	OR	IF TAB_(r,r)	+ C@ THEN
+ #(%r_x),%r_x   	IF TAB_(r)r	+ C@ THEN
  #(%r_x,%r_x),%r_x	IF TAB_(r,r)r	+ C@ THEN
- #%r_x,(%r_x)		IF TAB_r(r)	+ C@ THEN
+\ #%r_x,(%r_x)		IF TAB_r(r)	+ C@ THEN
  #%r_x,(%r_x,%r_x)	IF TAB_r(r,r)	+ C@ THEN
  REX_W OR $40 OR C,
   0 TO REX_W  0 TO REX.RBX
@@ -347,7 +346,7 @@ CREATE TAB_r(r,r)	0 C, 2 C, 1 C, 3 C, 4 C, 6 C, 5 C, 7 C,
 \ CR ." ((00=)" .S KEY DROP
  #%r_x IF  OR	$C0 DO|; 	BREAK
 
- #(%rip) IF 5 DO|; ((OFFSET HERE 4+ - L,  BREAK
+ #(%rip) IF 5 DO|; ((OFFSET HERE 4 + - L,  BREAK
  #(%r_x)
 \ CR ." ((22=)" .S KEY DROP
  IF	>>)) IF 4 DO|; 3 << 5 OR >>)) OR C, ((OFFSET L,	BREAK
@@ -428,8 +427,8 @@ CREATE TAB_r(r,r)	0 C, 2 C, 1 C, 3 C, 4 C, 6 C, 5 C, 7 C,
 : setno,	$91 SET, ;
 : setb, 	$92 SET, ;
 : setae,	$93 SET, ;
-: sete, 	$94 SET, ;
-: setne,	$95 SET, ;
+: sete, 	$94 SET, ; : setz, sete, ;
+: setne,	$95 SET, ; : setnz, setne, ;
 : setbe,	$96 SET, ;
 : seta,		$97 SET, ;
 : sets, 	$98 SET, ;
@@ -459,6 +458,10 @@ CREATE TAB_r(r,r)	0 C, 2 C, 1 C, 3 C, 4 C, 6 C, 5 C, 7 C,
   $ff C, $30 (()), ;
 
 : >PARM ( cfa )  >BODY @ TO PARM_HESH ;
+
+: PUSHQ, $48 C,  PUSH, ;
+
+: CALLQ, $48 C, $ff C, $10 (()), ;
 
 0 VALUE SREX_W
 
@@ -495,22 +498,35 @@ CREATE TAB_r(r,r)	0 C, 2 C, 1 C, 3 C, 4 C, 6 C, 5 C, 7 C,
 			IF	$83 C,	['] #(%r_x,%r_x) >PARM (()), C,
 			BREAK	$81 C,	['] #(%r_x,%r_x) >PARM (()), L, 
 		BREAK
+  #$,(%rip) IF	  \  $imm reg
+		 $83 C, $5 DO|; ((OFFSET HERE 5 +  - L, C,
+	  BREAK
+
+
 
 \  #%_l,%_l   IF C, SWAP 3 << OR $C0 DO|; BREAK
 
  REG>8 OR
 
+ #%r_x,(%rip)   IF  \   reg cod
+			C, 3 << 5 DO|; ((OFFSET HERE  4 + -  L,
+		BREAK
+
   #%r_x,%r_x		IF C, SWAP 3 << OR $C0 DO|; BREAK
 
   #%r_x,(%r_x)		IF C, SWAP 3 << ['] #(%r_x)	>PARM (()), BREAK
   #%r_x,(%r_x,%r_x)	IF C, ROT  3 << ['] #(%r_x,%r_x) >PARM (()), BREAK
-  #%r_x,(%rip)		IF C, 3 << ['] #(%rip)	>PARM (()), BREAK
+
 
   2 OR
+\ CR ." #(%rip),%r_x="
+ #(%rip),%r_x \ DUP . KEY DROP
+  IF  \   reg cod
+			C, 3 << 5 DO|; ((OFFSET HERE 4 + -  L,
+		BREAK
 
   #(%r_x),%r_x		IF C, 3 << ['] #(%r_x)		>PARM (()), BREAK
   #(%r_x,%r_x),%r_x	IF C, 3 << ['] #(%r_x,%r_x)	>PARM (()), BREAK
-  #(%rip),%r_x		IF C, 3 << ['] #(%rip)	>PARM (()), BREAK
   -333 THROW
 ;
 
@@ -522,6 +538,21 @@ CREATE TAB_r(r,r)	0 C, 2 C, 1 C, 3 C, 4 C, 6 C, 5 C, 7 C,
 : sub,	0x28 ADD| ;
 : xor,	0x30 ADD| ;
 : cmp, 	0x38 ADD| ;
+
+: ADDQ|
+  #$,(%rip) IF $8 TO REX_W THEN
+  #$,(%r_x) IF $8 TO REX_W THEN
+  ADD|
+;
+
+: addq,	0x00 ADDQ| ;
+: orq,	0x08 ADDQ| ;
+: adcq,	0x10 ADDQ| ;
+: sbbq,	0x18 ADDQ| ;
+: ANDq,	0x20 ADDQ| ;
+: subq,	0x28 ADDQ| ;
+: xorq,	0x30 ADDQ| ;
+: cmpq,	0x38 ADDQ| ;
 
 : imul, ?REX,  #%r_x,%r_x	IF $af0f W, SWAP 3 << OR $C0 DO|; BREAK
   #(%r_x),%r_x		IF $0f C, $af ADD|  BREAK
@@ -552,6 +583,10 @@ CREATE TAB_r(r,r)	0 C, 2 C, 1 C, 3 C, 4 C, 6 C, 5 C, 7 C,
 
 		SREX_W 0= IF -333 THROW THEN
 		$B8 DO|; ,
+	  BREAK
+
+  #$,(%rip) IF	  \  $imm reg
+		 $C7 C, 0 $5 DO|; ((OFFSET HERE 8 +  - L, SREX_W  IF  L,  BREAK  C,
 	  BREAK
 
  #$,(%r_x)	IF	$c7  C,	['] #(%r_x)		>PARM 0 (()), L,	BREAK
@@ -694,6 +729,13 @@ CREATE TAB_r(r,r)	0 C, 2 C, 1 C, 3 C, 4 C, 6 C, 5 C, 7 C,
   -333 THROW
  ;
 
+: !!!!lea,
+
+  #(%r_x),%r_x		IF SWAP [']  #%r_x,(%r_x)	>PARM 0x8C ADD|  BREAK
+  #(%r_x,%r_x),%r_x	IF -ROT [']  #%r_x,(%r_x,%r_x)	>PARM 0x8C ADD|  BREAK 
+	0x8c ADD| ;
+
+
 
 : SH,	?REX,
 	#%r_x	IF	$D0 REG>8 OR C, DO|;	BREAK
@@ -771,8 +813,13 @@ CREATE TAB_r(r,r)	0 C, 2 C, 1 C, 3 C, 4 C, 6 C, 5 C, 7 C,
 : #LP, C, 1- HERE - C, ;
 
 : JMP,   #%r_x IF 0 TO REX.RBX 0 TO REX_W $FF C, $E0 DO|; BREAK
-	PARM_HESH IF $ff C, $20 (()), BREAK
-  OVER 1- HERE - SHORT? IF $eb #LP, BREAK
+	PARM_HESH IF ?REX, $ff C, $20 (()), BREAK
+  DUP 1- HERE - SHORT? IF $eb #LP, BREAK
+  $E9  C, 4 - HERE - L,  ;
+
+: JMP,.   #%r_x IF 0 TO REX.RBX 0 TO REX_W $FF C, $E0 DO|; BREAK
+	PARM_HESH IF ?REX, $ff C, $20 (()), BREAK
+	DUP 1- HERE - SHORT? IF $eb #LP, BREAK
   $E9  C, 4 - HERE - L,  ;
 
 : loopne,	$e0 #LP, ;
@@ -809,27 +856,36 @@ $E3 constant NCXZ?  $72 constant NCY?   $EB constant NV? ( never )
 : jg,  	$f J? ;
 
 0 constant con-flg		\ -- 0 ; address structure flag
+1 constant lcon-flg		\ -- 1 ; address structure flag
 
-: ?>mark        \ -- as-flag as-orig
+: ?>mark        \ -- as-orig as-flag
 \ lay forward branch offset after opcode; patched up later
-  con-flg here  0 c,
+  here  0 c, con-flg
+;
+
+: ?>lmark        \ -- as-orig as-flag
+\ lay forward branch offset after opcode; patched up later
+  here  0 l, lcon-flg
 ;
 
 : if,		\ cond -- as-flag as-orig
   c, ?>mark	\ preserve condition, and do last opcode
 ;
 
-: then,		\ as-flag as-orig --
+: then,		\ as-orig as-flag --
+  con-flg XOR  IF -22 THROW THEN
   here over 1+ -  dup SHORT? 0= IF 333 THROW THEN
-  swap c!  con-flg XOR  IF 333 THROW THEN
+  swap c! 
 ;
 
 : endif,	\ as-flag as-orig --
   then,
 ;
 
+: ahead, $0EB if, ; 
+
 : else,		\ as-flag1 as-orig1 -- as-flag2 as-orig2
-  $0EB if,  2swap  then,	\ magic number for JMP rel8
+ ahead, 2swap then,	\ magic number for JMP rel8
 ;
 
 : begin,	\ -- as-flag as-dest
@@ -838,7 +894,7 @@ $E3 constant NCXZ?  $72 constant NCY?   $EB constant NV? ( never )
 
 : until,	\ as-flag as-dest cond --
    c,
-  here 1+ - dup SHORT? 0= IF 333 THROW THEN
+  here 1+ - dup SHORT? 0= IF -22 THROW THEN c,
  con-flg XOR  IF 333 THROW THEN
 ;
 
@@ -856,6 +912,20 @@ $E3 constant NCXZ?  $72 constant NCY?   $EB constant NV? ( never )
 
 : times,	\ n -- dest
   $$  %rcx mov,  here	\ points after  mov  rcx, # n
+;
+
+: l_if,		\ cond -- as-flag as-orig
+ $f c, $f0 xor c, ?>lmark	\ preserve condition, and do last opcode
+;
+
+: l_then,		\ as-flag as-orig --
+ lcon-flg XOR  IF 333 THROW THEN
+  here over 4 + -
+  swap L! 
+;
+: l_ahead,  $0E9 c, ?>lmark ;
+: l_else,		\ as-flag1 as-orig1 -- as-flag2 as-orig2
+  l_ahead, 2swap  l_then,	\ magic number for JMP rel8
 ;
 
 CREATE NLASTS 0 ,
@@ -921,7 +991,7 @@ DEFER A?HEAD
 
 EXPORT
 
-\- T-ALIGN : T-ALIGN  BEGIN  HERE 3 AND WHILE 0xFF C, REPEAT ;
+\- T-ALIGN : T-ALIGN  BEGIN  HERE 3 AND WHILE 0x00 C, REPEAT ;
 
 : GASM_BIG
 \+ SHERE-TO-TAB  SHERE-TO-TAB
