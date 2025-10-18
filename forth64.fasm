@@ -293,7 +293,12 @@ _COMMAND_LINE: ;( -- zaddr )
 
 
 _ZOPENsubFILE: ; ( z-addr fam -- fileid ior )
+	MOV     R12, RSP
+	SUB     RSP, 20h
+	AND     RSP, -10h
 	invoke	CreateFile,qword [rbp],rax,0,0,OPEN_EXISTING,FILE_ATTRIBUTE_ARCHIVE,0
+	MOV     RSP, R12
+
 	AND	rax,07fffffffh
 	mov	[rbp],rax
 
@@ -304,7 +309,12 @@ _ZOPENsubFILE: ; ( z-addr fam -- fileid ior )
 
 
 _ZOPENsubFILEsubSHARED: ; ( z-addr fam -- fileid ior )
+	MOV     R12, RSP
+	SUB     RSP, 20h
+	AND     RSP, -10h
 	invoke	CreateFile,qword [rbp],rax,3,0,OPEN_EXISTING,FILE_ATTRIBUTE_ARCHIVE,0
+	MOV     RSP, R12
+
 	AND	rax,07fffffffh
 	mov	[rbp],rax
 
@@ -314,7 +324,13 @@ _ZOPENsubFILEsubSHARED: ; ( z-addr fam -- fileid ior )
 	ret
 
 _ZCREATEsubFILE: ;( z-addr fam -- fileid ior )
+
+	MOV     R12, RSP
+	SUB     RSP, 20h
+	AND     RSP, -10h
 	invoke	CreateFile,qword [rbp],rax,0,0,CREATE_ALWAYS,FILE_ATTRIBUTE_ARCHIVE,0
+	MOV     RSP, R12
+
 	AND	rax,07fffffffh
 	mov	[rbp],rax
 
@@ -324,7 +340,12 @@ _ZCREATEsubFILE: ;( z-addr fam -- fileid ior )
 	ret
 
 _ZCREATEsubFILEsubSHARED: ;( z-addr fam -- fileid ior )
+	MOV     R12, RSP
+	SUB     RSP, 20h
+	AND     RSP, -10h
 	invoke	CreateFile,qword [rbp],rax,3,0,CREATE_ALWAYS,FILE_ATTRIBUTE_ARCHIVE,0
+	MOV     RSP, R12
+
 	AND	rax,07fffffffh
 	mov	[rbp],rax
 
@@ -334,7 +355,12 @@ _ZCREATEsubFILEsubSHARED: ;( z-addr fam -- fileid ior )
 	ret
 
 _CLOSEsubFILE: ;( fileid -- ior )
+	MOV     R12, RSP
+	SUB     RSP, 20h
+	AND     RSP, -10h
 	invoke	CloseHandle,rax
+	MOV     RSP, R12
+	
      	mov    rax,0
 	ret
 
